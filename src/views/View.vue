@@ -60,19 +60,17 @@ onUnmounted(() => {
 	}
 });
 
-onMounted(() => {
-	if (route.params.id) {
-		fileId.value = Number(route.params.id);
-		fetchData(fileId.value);
+const loadFile = (newId?: string | string[]) => {
+	if (!newId) {
+		if (typeof route.params.id === 'string') newId = route.params.id;
+		else if (Array.isArray(route.params.id)) newId = route.params.id[0];
 	}
-});
-
-watch(() => route.params.id, (newId) => {
-	if (newId) {
-		fileId.value = Number(newId);
-		fetchData(fileId.value);
-	}
-});
+	if (!newId) return;
+	fileId.value = Number(newId);
+	fetchData(fileId.value);
+};
+onMounted(loadFile);
+watch(() => route.params.id, loadFile);
 </script>
 <template>
 	<div class="container mx-auto">

@@ -3,6 +3,9 @@ import { ref } from 'vue';
 import { db, type FileMetadata, type RawFileData, type ParsedCSVData } from '@/db';
 import { parseCSV } from '@/lib/csvParser';
 import { categorizeFileType } from '@/lib/utils';
+import { useFilesStore } from '@/stores/files';
+
+const filesStore = useFilesStore();
 
 const selectedFiles = ref<File[]>([]);
 const uploadedFiles = ref<FileMetadata[]>([]);
@@ -44,7 +47,7 @@ const handleFileChange = async (event: Event) => {
 						}
 					}
 
-					const fileId = await db.fileMetadata.add(newFileMetadata);
+					const fileId = await filesStore.add(newFileMetadata);
 
 					// Update fileId for parsed data if it was a CSV
 					if (parsedDataId) {

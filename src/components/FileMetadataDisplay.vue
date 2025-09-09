@@ -2,12 +2,14 @@
 import { File, Calendar, HardDrive, Type, Image, FileText, Trash } from 'lucide-vue-next';
 import { Button } from './ui/button';
 import type { FileMetadata } from '@/db';
-import { deleteFile } from '@/lib/api';
 import router from '@/router';
+import { useFilesStore } from '@/stores/files';
 
 const props = defineProps<{
 	metadata: FileMetadata;
 }>();
+
+const filesStore = useFilesStore();
 
 const formatFileSize = (bytes: number): string => {
 	if (bytes === 0) return '0 Bytes';
@@ -35,7 +37,8 @@ const fileIconComponent = getFileIconComponent(props.metadata.mime);
 				<component :is="fileIconComponent" :size="32" class="text-primary" />
 				<span>{{ metadata.name }}</span>
 				<small>
-					<Button variant="destructive" size="sm" @click="() => { deleteFile(metadata.id); router.replace('/'); }">
+					<Button variant="destructive" size="sm"
+						@click="() => { filesStore.remove(metadata.id); router.replace('/'); }">
 						<Trash />
 					</Button>
 				</small>
@@ -57,6 +60,3 @@ const fileIconComponent = getFileIconComponent(props.metadata.mime);
 		</div>
 	</div>
 </template>
-<style scoped>
-/* Add any specific styles for this component here if needed */
-</style>
