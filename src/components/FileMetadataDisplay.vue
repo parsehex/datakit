@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
 import { File, Calendar, HardDrive, Type, Image, FileText, Trash } from 'lucide-vue-next';
 import { Button } from './ui/button';
 import type { FileMetadata } from '@/db';
