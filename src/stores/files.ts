@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { liveQuery } from 'dexie';
-import { db, type FileMetadata } from '@/db';
+import { db, type FileMetadata, type RawFileData } from '@/db';
 import { useDexieObservable } from '@/lib/utils';
 import { computed } from 'vue';
 
@@ -18,12 +18,27 @@ export const useFilesStore = defineStore('files', () => {
 		return Array.from(new Set(all.value?.map((file) => file.type)));
 	});
 
-	const add = (newFileMetadata: FileMetadata) =>
-		db.fileMetadata.add(newFileMetadata);
-	const remove = async (id: number | undefined) => {
-		if (id === undefined) return;
+	const add = (newData: FileMetadata) => db.fileMetadata.add(newData);
+	const remove = async (id: number) => {
+		await db.parsedCSVData.where('fileId').equals(id).delete();
+		await db.rawFiles.where('fileId').equals(id).delete();
 		await db.fileMetadata.delete(id);
 	};
 
-	return { all, recent, total, types, add, remove };
+	const getMeta = async (id: number) => db.fileMetadata.get(id);
+	const addRaw = async (data: RawFileData) => db.rawFiles.add(data);
+	const getRaw = async (id: number) =>
+		db.rawFiles.where('fileId').equals(id).first();
+
+	return {
+		all,
+		recent,
+		total,
+		types,
+		add,
+		remove,
+		getMeta,
+		addRaw,
+		getRaw,
+	};
 });

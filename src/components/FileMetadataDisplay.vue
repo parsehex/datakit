@@ -36,9 +36,9 @@ const fileIconComponent = getFileIconComponent(props.metadata.mime);
 			<h1 class="text-3xl font-bold flex items-center space-x-3">
 				<component :is="fileIconComponent" :size="32" class="text-primary" />
 				<span>{{ metadata.name }}</span>
-				<small>
+				<small v-if="metadata.id">
 					<Button variant="destructive" size="sm"
-						@click="() => { filesStore.remove(metadata.id); router.replace('/'); }">
+						@click="() => { if (!metadata.id) return; filesStore.remove(metadata.id); router.replace('/'); }">
 						<Trash />
 					</Button>
 				</small>

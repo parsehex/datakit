@@ -2,9 +2,13 @@
 import { useRoute } from 'vue-router';
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import FileMetadataDisplay from '@/components/FileMetadataDisplay.vue';
-import { db, type FileMetadata, type RawFileData, type ParsedCSVData } from '@/db';
+import { type FileMetadata, type RawFileData, type ParsedCSVData } from '@/db';
+import { useFilesStore } from '@/stores/files';
+import { useParsedStore } from '@/stores/parsed';
 
 const route = useRoute();
+const filesStore = useFilesStore();
+const parsed = useParsedStore();
 const fileId = ref<number | null>(null);
 const fileMetadata = ref<FileMetadata | null>(null);
 const rawFileData = ref<RawFileData | null>(null);
@@ -19,30 +23,27 @@ const fetchData = async (id: number) => {
 		imageUrl.value = null;
 	}
 
-	const metadata = await db.fileMetadata.get(id);
+	const metadata = await filesStore.getMeta(id);
 	if (metadata) {
 		fileMetadata.value = metadata;
-		const rawData = await db.rawFiles.where('fileId').equals(id).first();
-		if (rawData) {
-			rawFileData.value = rawData;
-		}
+		const rawData = await filesStore.getRaw(id);
+		if (rawData) rawFileData.value = rawData;
 
-		if (fileMetadata.value.mime === 'text/csv' && fileMetadata.value.parsedDataId) {
-			const parsedData = await db.parsedCSVData.get(fileMetadata.value.parsedDataId);
-			if (parsedData) {
-				parsedCSVData.value = parsedData;
-			}
+		const { type, mime, parsedDataId } = fileMetadata.value;
+		if (mime === 'text/csv' && parsedDataId) {
+			const parsedData = await parsed.getCSV(parsedDataId);
+			if (parsedData) parsedCSVData.value = parsedData;
 		}
 
 		if (rawFileData.value && rawFileData.value.data) {
-			if (fileMetadata.value.mime.startsWith('text')) {
+			if (mime.startsWith('text')) {
 				fileContent.value = new TextDecoder().decode(rawFileData.value.data);
-			} else if (fileMetadata.value.type === 'image') {
-				const blob = new Blob([rawFileData.value.data], { type: fileMetadata.value.mime });
+			} else if (type === 'image') {
+				const blob = new Blob([rawFileData.value.data], { type: mime });
 				imageUrl.value = URL.createObjectURL(blob);
 				fileContent.value = null; // Clear text content for images
 			} else {
-				fileContent.value = `Binary content of type: ${fileMetadata.value.mime}`;
+				fileContent.value = `Binary content of type: ${mime}`;
 			}
 		}
 	} else {

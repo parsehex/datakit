@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { db, type FileMetadata, type RawFileData, type ParsedCSVData } from '@/db';
+import { type FileMetadata, type RawFileData, type ParsedCSVData } from '@/db';
 import { parseCSV } from '@/lib/csvParser';
 import { categorizeFileType } from '@/lib/utils';
 import { useFilesStore } from '@/stores/files';
+import { useParsedStore } from '@/stores/parsed';
 
 const filesStore = useFilesStore();
+const parsedStore = useParsedStore();
 
 const selectedFiles = ref<File[]>([]);
 const uploadedFiles = ref<FileMetadata[]>([]);
@@ -39,7 +41,7 @@ const handleFileChange = async (event: Event) => {
 								headers: parsed.headers,
 								rows: parsed.rows,
 							};
-							parsedDataId = await db.parsedCSVData.add(newParsedCSVData);
+							parsedDataId = await parsedStore.addCSV(newParsedCSVData);
 							newFileMetadata.parsedDataId = parsedDataId;
 						} catch (error) {
 							console.error('Error parsing CSV:', error);
@@ -51,14 +53,14 @@ const handleFileChange = async (event: Event) => {
 
 					// Update fileId for parsed data if it was a CSV
 					if (parsedDataId) {
-						await db.parsedCSVData.update(parsedDataId, { fileId: fileId });
+						await parsedStore.updateCSV(parsedDataId, { fileId: fileId });
 					}
 
 					const newRawFileData: RawFileData = {
 						fileId: fileId,
 						data: e.target.result as ArrayBuffer,
 					};
-					await db.rawFiles.add(newRawFileData);
+					await filesStore.addRaw(newRawFileData);
 
 					uploadedFiles.value.push({ ...newFileMetadata, id: fileId });
 				}

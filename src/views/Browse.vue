@@ -31,7 +31,7 @@ const filteredFiles = computed(() => {
 					<RouterLink :to="`/view/${file.id}`" class="w-full">
 						<span>{{ file.name }} ({{ file.type }}) - {{ file.size }} bytes</span>
 					</RouterLink>
-					<div class="flex space-x-2">
+					<div v-if="file.id" class="flex space-x-2">
 						<Button variant="destructive" size="sm" @click="filesStore.remove(file.id)">
 							<Trash />
 						</Button>
