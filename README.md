@@ -8,6 +8,8 @@ Currently the following data/file types can be viewed:
 - **Images** are rendered on the page
 - **Text** is also displayed on the page
 
+Try the app at <https://parsehex.github.io/datakit/>
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
